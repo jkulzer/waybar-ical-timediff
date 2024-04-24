@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/arran4/golang-ical"
 	"math"
@@ -14,31 +15,32 @@ type TimeDuration time.Duration
 func main() {
 	currentTime := time.Now()
 
-	startTime, err := parseTimeString("08:00:00", currentTime)
-	if err != nil {
-		panic("Failed to parse time")
-	}
-
-	endTime, err := parseTimeString("13:00:00", currentTime)
-	if err != nil {
-		panic("Failed to parse time")
-	}
-
 	if len(os.Args) >= 2 {
 
 		switch os.Args[1] {
 		case "futureDiff":
+			_, endTime, err := diffsFromIcal(currentTime)
+			if err != nil {
+				os.Exit(0)
+			}
 			diff := endTime.Sub(currentTime)
 
 			fmt.Println(TimeDuration(diff).Format("15:04"))
 
 		case "pastDiff":
+			startTime, _, err := diffsFromIcal(currentTime)
+			if err != nil {
+				os.Exit(0)
+			}
 			diff := currentTime.Sub(startTime)
 
 			fmt.Println(TimeDuration(diff).Format("15:04"))
 
 		case "diffPercentage":
-			startFromIcal()
+			startTime, endTime, err := diffsFromIcal(currentTime)
+			if err != nil {
+				os.Exit(0)
+			}
 			fmt.Println(fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%")
 		}
 
@@ -71,22 +73,41 @@ func diffPercentage(currentTime time.Time, startTime time.Time, endTime time.Tim
 	return int(math.Round(((pastDiff / entireDiff) * 100)))
 }
 
-func startFromIcal() {
+func getIcal() string {
 	dat, err := os.ReadFile("./calendar.ics")
 	if err != nil {
 		panic("Failed reading calendar file")
 	}
 
-	cal, err := ics.ParseCalendar(strings.NewReader(string(dat)))
+	return string(dat)
+}
+
+func diffsFromIcal(currentTime time.Time) (time.Time, time.Time, error) {
+
+	cal, err := ics.ParseCalendar(strings.NewReader(getIcal()))
+	if err != nil {
+		panic("Failed parsing calendar")
+	}
 
 	events := cal.Events()
 
 	for _, event := range events {
+		start, err := event.ComponentBase.GetStartAt()
+		if err != nil {
+			panic("Failed parsing events")
+		}
+
 		end, err := event.GetEndAt()
 		if err != nil {
 			panic("Failed parsing events")
 		}
-		fmt.Println(end)
+
+		if start.Before(currentTime) && end.After(currentTime) {
+			return start, end, nil
+		}
+
 	}
+
+	return time.Now(), time.Now(), errors.New("No current event found")
 
 }
