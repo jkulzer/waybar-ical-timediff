@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/arran4/golang-ical"
+	"io"
 	"math"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -24,15 +26,6 @@ func main() {
 				os.Exit(0)
 			}
 			diff := endTime.Sub(currentTime)
-
-			fmt.Println(TimeDuration(diff).Format("15:04"))
-
-		case "pastDiff":
-			startTime, _, err := diffsFromIcal(currentTime)
-			if err != nil {
-				os.Exit(0)
-			}
-			diff := currentTime.Sub(startTime)
 
 			fmt.Println(TimeDuration(diff).Format("15:04"))
 
@@ -74,12 +67,23 @@ func diffPercentage(currentTime time.Time, startTime time.Time, endTime time.Tim
 }
 
 func getIcal() string {
-	dat, err := os.ReadFile("./calendar.ics")
+	resp, err := http.Get("https://hwrical.zrgr.pw/informatik/semester2/kursa/Tutorium/Gruppe%201/Englisch/")
 	if err != nil {
-		panic("Failed reading calendar file")
+		panic("Failed reading calendar")
 	}
 
-	return string(dat)
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			panic("Failed to get calendar from webpage")
+		}
+		bodyString := string(bodyBytes)
+		return string(bodyString)
+	}
+
+	return ""
 }
 
 func diffsFromIcal(currentTime time.Time) (time.Time, time.Time, error) {
