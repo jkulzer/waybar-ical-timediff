@@ -17,21 +17,27 @@ type TimeDuration time.Duration
 func main() {
 	currentTime := time.Now()
 
-	if len(os.Args) >= 2 {
+	if len(os.Args) >= 3 {
+
+		iCalUrl := os.Args[2]
 
 		switch os.Args[1] {
 		case "futureDiff":
-			_, endTime, err := diffsFromIcal(currentTime)
+			_, endTime, err := diffsFromIcal(currentTime, iCalUrl)
 			if err != nil {
+				fmt.Println("No current event")
 				os.Exit(0)
 			}
 			diff := endTime.Sub(currentTime)
 
-			fmt.Println(TimeDuration(diff).Format("15:04"))
+			fmt.Println(
+				TimeDuration(diff).Format("15:04"),
+			)
 
 		case "diffPercentage":
-			startTime, endTime, err := diffsFromIcal(currentTime)
+			startTime, endTime, err := diffsFromIcal(currentTime, iCalUrl)
 			if err != nil {
+				fmt.Println("No current event")
 				os.Exit(0)
 			}
 			fmt.Println(fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%")
@@ -39,8 +45,8 @@ func main() {
 
 	} else {
 		fmt.Println("Supply arguments: Possible arguments:")
-		fmt.Println("futureDiff")
-		fmt.Println("pastDiff")
+		fmt.Println("futureDiff ${{iCal URL}}")
+		fmt.Println("pastDiff ${{iCal URL}}")
 	}
 
 }
@@ -66,9 +72,10 @@ func diffPercentage(currentTime time.Time, startTime time.Time, endTime time.Tim
 	return int(math.Round(((pastDiff / entireDiff) * 100)))
 }
 
-func getIcal() string {
-	resp, err := http.Get("https://hwrical.zrgr.pw/informatik/semester2/kursa/Tutorium/Gruppe%201/Englisch/")
+func getIcal(iCalUrl string) string {
+	resp, err := http.Get(iCalUrl)
 	if err != nil {
+		fmt.Println()
 		panic("Failed reading calendar")
 	}
 
@@ -81,14 +88,15 @@ func getIcal() string {
 		}
 		bodyString := string(bodyBytes)
 		return string(bodyString)
+	} else {
+		panic("Failed to get calendar from webpage")
 	}
 
-	return ""
 }
 
-func diffsFromIcal(currentTime time.Time) (time.Time, time.Time, error) {
+func diffsFromIcal(currentTime time.Time, iCalUrl string) (time.Time, time.Time, error) {
 
-	cal, err := ics.ParseCalendar(strings.NewReader(getIcal()))
+	cal, err := ics.ParseCalendar(strings.NewReader(getIcal(iCalUrl)))
 	if err != nil {
 		panic("Failed parsing calendar")
 	}

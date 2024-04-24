@@ -1,0 +1,27 @@
+name: Build waybar-ical-timediff
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: main
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/flake-checker-action@main
+      - name: Build application
+        run: |
+          nix build
+      - name: Create Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+           repo_token: "${{ secrets.GITHUB_TOKEN }}"
+           title: "waybar-ical-timediff"
+           prerelease: true
+           files: |
+             result/bin/waybar-ical-timediff
