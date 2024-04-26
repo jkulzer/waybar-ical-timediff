@@ -17,10 +17,6 @@ jobs:
       - name: Build application
         run: |
           nix build
-      - name: Create Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: ncipollo/release-action@v1
         with:
-           repo_token: "${{secrets.GITHUB_TOKEN}}"
-           title: "waybar-ical-timediff"
-           files: |
-             result/bin/waybar-ical-timediff
+          artifacts: "result/bin/waybar-ical-timediff"
