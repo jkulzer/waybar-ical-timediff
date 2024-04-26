@@ -1,5 +1,7 @@
 name: Build waybar-ical-timediff
 
+permissions: write-all
+
 on:
   push:
     tags:
