@@ -2,8 +2,8 @@ name: Build waybar-ical-timediff
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
 
 jobs:
   build:
@@ -20,8 +20,7 @@ jobs:
       - name: Create Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
-           repo_token: "${{ secrets.GITHUB_TOKEN }}"
+           repo_token: "${{secrets.GITHUB_TOKEN}}"
            title: "waybar-ical-timediff"
-           prerelease: true
            files: |
              result/bin/waybar-ical-timediff
