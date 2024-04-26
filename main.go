@@ -27,17 +27,15 @@ func main() {
 		startTime, endTime, err := diffsFromIcal(currentTime, iCalUrl)
 		if err != nil {
 			data = map[string]interface{}{
-				"text":         "No current event",
-				"tooltip":      "No current event",
-				"timeUntilEnd": "00:00",
+				"text":    "No current event",
+				"tooltip": "No current event",
 			}
 		} else {
 			percentage := fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%"
 
 			data = map[string]interface{}{
-				"text":         percentage,
-				"tooltip":      endTime.Format("15:04"),
-				"timeUntilEnd": TimeDuration(endTime.Sub(currentTime)).Format("15:04"),
+				"text":    percentage,
+				"tooltip": "Ends at " + endTime.Format("15:04") + " in " + TimeDuration(endTime.Sub(currentTime)).Format("15:04"),
 			}
 		}
 
