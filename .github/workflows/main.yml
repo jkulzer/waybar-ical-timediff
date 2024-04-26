@@ -13,13 +13,13 @@ jobs:
     environment: main
     steps: 
       - uses: actions/checkout@v3
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: DeterminateSystems/flake-checker-action@main
-      - name: Build application
-        run: |
-          nix build
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+         go-version: '1.22'
+      - name: Build binary
+        run: go build -ldflags="-s -w -extldflags '-static'" -o waybar-ical-timediff
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "result/bin/waybar-ical-timediff"
+          artifacts: "waybar-ical-timediff"
           token: ${{secrets.GITHUB_TOKEN}}
