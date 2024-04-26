@@ -20,3 +20,4 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "result/bin/waybar-ical-timediff"
+          token: ${{secrets.GITHUB_TOKEN}}
