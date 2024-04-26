@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/arran4/golang-ical"
@@ -17,36 +18,38 @@ type TimeDuration time.Duration
 func main() {
 	currentTime := time.Now()
 
-	if len(os.Args) >= 3 {
+	if len(os.Args) == 2 {
 
-		iCalUrl := os.Args[2]
+		iCalUrl := os.Args[1]
 
-		switch os.Args[1] {
-		case "futureDiff":
-			_, endTime, err := diffsFromIcal(currentTime, iCalUrl)
-			if err != nil {
-				fmt.Println("No current event")
-				os.Exit(0)
+		var data map[string]interface{}
+
+		startTime, endTime, err := diffsFromIcal(currentTime, iCalUrl)
+		if err != nil {
+			data = map[string]interface{}{
+				"text":         "No current event",
+				"tooltip":      "No current event",
+				"timeUntilEnd": "00:00",
 			}
-			diff := endTime.Sub(currentTime)
+		} else {
+			percentage := fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%"
 
-			fmt.Println(
-				TimeDuration(diff).Format("15:04"),
-			)
-
-		case "diffPercentage":
-			startTime, endTime, err := diffsFromIcal(currentTime, iCalUrl)
-			if err != nil {
-				fmt.Println("No current event")
-				os.Exit(0)
+			data = map[string]interface{}{
+				"text":         percentage,
+				"tooltip":      endTime.Format("15:04"),
+				"timeUntilEnd": TimeDuration(endTime.Sub(currentTime)).Format("15:04"),
 			}
-			fmt.Println(fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%")
 		}
 
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			panic("Failed to encode data into JSON")
+		}
+
+		fmt.Println(string(jsonData))
+
 	} else {
-		fmt.Println("Supply arguments: Possible arguments:")
-		fmt.Println("futureDiff ${{iCal URL}}")
-		fmt.Println("pastDiff ${{iCal URL}}")
+		fmt.Println("Supply iCal URL as the first argument")
 	}
 
 }
@@ -60,6 +63,7 @@ func parseTimeString(inputString string, currentTime time.Time) (time.Time, erro
 }
 
 // see https://stackoverflow.com/a/69101998
+
 func (t TimeDuration) Format(format string) string {
 	return time.Unix(0, 0).UTC().Add(time.Duration(t)).Format(format)
 }
@@ -98,6 +102,7 @@ func diffsFromIcal(currentTime time.Time, iCalUrl string) (time.Time, time.Time,
 
 	cal, err := ics.ParseCalendar(strings.NewReader(getIcal(iCalUrl)))
 	if err != nil {
+		fmt.Println(err)
 		panic("Failed parsing calendar")
 	}
 
