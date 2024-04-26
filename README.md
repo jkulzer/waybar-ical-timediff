@@ -71,6 +71,28 @@ This doesn't build the application, it pulls the latest GitHub release
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+### waybar configuration
+
+#### Plain config
+```json
+"custom/ical-timediff": {
+  "exec": "waybar-ical-timediff https://example.com/myICal.ics",
+  "format": "Lesson Progress: {}",
+  "interval": "15",
+  "return-type": "json"
+},
+```
+
+#### nix
+```
+"custom/ical-timediff" = {
+    return-type = "json";
+    interval = 15;
+    exec = "~/waybar-ical-timediff/result/bin/waybar-ical-timediff https://example.com/myICal.ics";
+    format = "Lesson Progress: {}";
+};
+```
+
 
 
 <!-- ROADMAP -->
