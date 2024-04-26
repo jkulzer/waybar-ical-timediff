@@ -84,7 +84,7 @@ This doesn't build the application, it pulls the latest GitHub release
 ```
 
 #### nix
-```
+```nix
 "custom/ical-timediff" = {
     return-type = "json";
     interval = 15;
