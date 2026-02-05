@@ -22,18 +22,21 @@ func main() {
 
 		iCalUrl := os.Args[1]
 
-		var data map[string]interface{}
+		var data map[string]any
 
 		startTime, endTime, err := diffsFromIcal(currentTime, iCalUrl)
 		if err != nil {
-			data = map[string]interface{}{
+			data = map[string]any{
 				"text":    "No current event",
 				"tooltip": "No current event",
 			}
 		} else {
-			percentage := fmt.Sprint(diffPercentage(currentTime, startTime, endTime)) + "%"
+			// offset akademische viertelstunde
+			offsetStartTime := startTime.Add(time.Minute * 15)
+			offsetEndTime := endTime.Add(-1 * time.Minute * 15)
+			percentage := fmt.Sprint(diffPercentage(currentTime, offsetStartTime, offsetEndTime)) + "%"
 
-			data = map[string]interface{}{
+			data = map[string]any{
 				"text":    percentage,
 				"tooltip": "Ends at " + endTime.Format("15:04") + " in " + TimeDuration(endTime.Sub(currentTime)).Format("15:04"),
 			}

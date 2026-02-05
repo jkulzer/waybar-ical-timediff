@@ -25,6 +25,7 @@
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
           go
+          cobra-cli
         ];
       };
     });
